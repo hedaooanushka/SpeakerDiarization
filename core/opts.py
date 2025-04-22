@@ -18,7 +18,7 @@ def parse_opts():
     parser.add_argument('--step_size', default=5, type=int, help='Steps to reduce learning rate by gamma')
     parser.add_argument('--gamma', default=0.1, type=float, help='Ratio to drop learning rate at step size')
     parser.add_argument('--image_size', default=(160, 160), type=int, help='Used image resolution')
-    parser.add_argument('--clip_length', default=16, type=int, help='Used clip length')
+    parser.add_argument('--clip_length', default=10, type=int, help='Used clip length')
     parser.add_argument('--cuda_device_num', default='0', type=str, help='Used cuda device number')
     parser.add_argument('--feature_extraction_subset', default='val', type=str, help='Subset to extract features. (train | val | test)')
 
@@ -38,7 +38,8 @@ def parse_opts():
 
     parser.add_argument('--av_enc_batch_size', default=16, type=int, help='batch size to train av_enc stage')
     parser.add_argument('--av_enc_learning_rate', default=3e-4, type=float, help='learning rate to train av_enc stage')
-    parser.add_argument('--video_backbone', default='resnext101', type=str, help='(resnet18 | resnext101 | ... ')
+    # parser.add_argument('--video_backbone', default='resnext101', type=str, help='(resnet18 | resnext101 | ... ')
+    parser.add_argument('--video_backbone', default='emonet', type=str, help='(resnet18 | resnext101 | ... ')
     parser.add_argument('--video_backbone_pretrained_path', default='/usr/home/kop/ASDNet/weights/kinetics_resnext_101_RGB_16_best.pth', type=str, help='Pretrained video backbone weight')
     parser.add_argument('--audio_backbone', default='sincdsnet', type=str, help='Currently only sincdsnet is supported')
     parser.add_argument('--audio_backbone_pretrained_path', default=None, type=str, help='Pretrained audio backbone weight')

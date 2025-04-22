@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.parameter
 import torch.nn.functional as F
 
-from backbones_video import resnet_3d, resnext, mobilenet, mobilenetv2, shufflenet, shufflenetv2
+from backbones_video import resnet_3d, resnext, mobilenet, mobilenetv2, shufflenet, shufflenetv2, emonet
 from backbones_audio import sincdsnet
 
 
@@ -69,7 +69,15 @@ class TM_ISRM_Net(nn.Module):
 
         return x
 
-    
+from core.opts import parse_opts
+opt = parse_opts()
+has_cuda = torch.cuda.is_available()
+BACKBONE_MODEL_PATH = 'videoWeights/torchscript_model_0_66_49_wo_gl.pth'
+LSTM_MODEL_PATH= 'videoWeights/IEMOCAP.pth'
+UNIFIED_MODEL_PATH = "videoWeights/unified_model_epoch_4.pth"
+device = torch.device('cuda:'+opt.cuda_device_num if has_cuda else 'cpu')
+
+
 # Audio Network
 class Audio_Backbone(nn.Module):
     def __init__(self, backbone, pretrained_path=None):
@@ -93,7 +101,9 @@ class Audio_Backbone(nn.Module):
 class Video_Backbone(nn.Module):
     def __init__(self, backbone, pretrained_path=None):
         super(Video_Backbone, self).__init__()
-        if backbone == 'resnet18':
+        if backbone == 'emonet':
+            self.base = emonet.getModel(UNIFIED_MODEL_PATH, BACKBONE_MODEL_PATH, LSTM_MODEL_PATH, device)
+        elif backbone == 'resnet18':
             self.base = resnet_3d.generate_model(model_depth=18)
         elif backbone == 'resnext101':
             self.base = resnext.resnext101()
@@ -105,6 +115,8 @@ class Video_Backbone(nn.Module):
             self.base = shufflenet.get_model(groups=3, num_classes=num_classes, width_mult=2.)
         elif backbone == 'shufflenetv2':
             self.base = shufflenetv2.get_model(num_classes=num_classes, sample_size=160, width_mult=2.)
+        
+
         else:
             print("Select and appropriate video backbone from the list: [resnet18, resnext101, mobilenet, mobilenetv2, shufflenet, shufflenetv2]")
             
@@ -115,8 +127,11 @@ class Video_Backbone(nn.Module):
 
     def forward(self, v):
         v = self.base(v) 
-        v = self.avgpool_3d(v)
-        v = v.reshape(v.size(0), -1)
+        print("##### VIDEOBACKBONE V shape: ", v.shape)
+        # v = self.avgpool_3d(v)
+        # print("##### VIDEOBACKBONE V shape after avgpool3d: ", v.shape)
+        # v = v.reshape(v.size(0), -1)
+        # print("##### VIDEOBACKBONE V shape after reshape: ", v.shape)
         return v
 
 
@@ -134,7 +149,7 @@ class TwoStreamNet(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         self.fc_128_a = nn.Linear(160, 128)
-        self.fc_128_v = nn.Linear(512, 128)
+        self.fc_128_v = nn.Linear(7, 128)
 
         # Predictions
         self.fc_final = nn.Linear(128*2, 2)

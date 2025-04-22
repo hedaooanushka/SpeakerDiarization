@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
                 dl_train = DataLoader(d_train, batch_size=opt.av_enc_batch_size,
                                       shuffle=True, num_workers=opt.threads)
-                dl_val = DataLoader(d_train, batch_size=opt.av_enc_batch_size,
+                dl_val = DataLoader(d_val, batch_size=opt.av_enc_batch_size,
                                     shuffle=True, num_workers=opt.threads)
 
                 model = optimize_av_enc(model, dl_train, dl_val, device,
